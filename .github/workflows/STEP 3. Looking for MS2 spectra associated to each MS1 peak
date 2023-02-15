@@ -1,0 +1,64 @@
+#Association between precursors and products
+RTtolerance<-0.9
+MS2spectraCE10_Neg1<-matrix(ncol=(3+ncol(Peaks0filtered_Neg1)+ncol(Peaks10final_Neg1)),nrow=0)
+colnames(MS2spectraCE10_Neg1)<-c("PrecursorID",(colnames(Peaks0filtered_Neg1)),"ProductID",(colnames(Peaks10final_Neg1)),"RTdiff")
+n=1
+while (n<(nrow(Peaks0filtered_Neg1)+1)){m=1
+while (m < (nrow(Peaks10final_Neg1)+1)){
+if(abs(Peaks0filtered_Neg1[n,"rt"]- Peaks10final_Neg1[m,"rt"])<RTtolerance){MS2spectraCE10_Neg1<-rbind(ResultsPrecProd15_Neg1,c(rownames(Peaks0filtered_Neg1)[n],Peaks0filtered_Neg1[n,],rownames(Peaks10final_Neg1)[m],Peaks10final_Neg1[m,],abs(Peaks0filtered_Neg1[n,"rt"]-Peaks10final_Neg1[m,"rt"])))
+m<-m+1}
+else {m<-m+1}}
+n<-n+1}
+write.csv(MS2spectraCE10_Neg1, "MS2spectraCE10_Neg1.csv", row.names = F)
+RTtolerance<-0.9
+MS2spectraCE20_Neg1<-matrix(ncol=(3+ncol(Peaks0filtered_Neg1)+ncol(Peaks20final_Neg1)),nrow=0)
+colnames(MS2spectraCE20_Neg1)<-c("PrecursorID",(colnames(Peaks0filtered_Neg1)),"ProductID",(colnames(Peaks20final_Neg1)),"RTdiff")
+n=1
+while (n<(nrow(Peaks0filtered_Neg1)+1)){m=1
+while (m < (nrow(Peaks20final_Neg1)+1)){
+if(abs(Peaks0filtered_Neg1[n,"rt"]- Peaks20final_Neg1[m,"rt"])<RTtolerance){MS2spectraCE20_Neg1<-rbind(ResultsPrecProd15_Neg1,c(rownames(Peaks0filtered_Neg1)[n],Peaks0filtered_Neg1[n,],rownames(Peaks20final_Neg1)[m],Peaks20final_Neg1[m,],abs(Peaks0filtered_Neg1[n,"rt"]-Peaks20final_Neg1[m,"rt"])))
+m<-m+1}
+else {m<-m+1}}
+n<-n+1}
+write.csv(MS2spectraCE20_Neg1, "MS2spectraCE20_Neg1.csv", row.names = F)
+#Calculating parameters for filtering MS2 spectra (Correlation coefficient, P-value, Paired P-value, Peak Shape Similarity,…) – Example for CE=10
+Corresults010_Neg1<-matrix(ncol=5,nrow=nrow(MS2spectraCE10_Neg1))
+colnames(Corresults010_Neg1)<-c("CoefCor","PvalueCor","WilcoxPvalue","WilcoxPvaluePaired","PPS")
+MS2spectraCE10Cor_Neg1<-cbind(MS2spectraCE10_Neg1,Corresults010_Neg1)
+i=1
+while (i<(nrow(MS2spectraCE10Cor_Neg1)+1)){
+mzr010<-c(as.numeric(MS2spectraCE10Cor_Neg1[i,3]),as.numeric(MS2spectraCE10Cor_Neg1[i,4]))
+rtr010<-c(as.numeric(MS2spectraCE10Cor_Neg1[i,6]),as.numeric(MS2spectraCE10Cor_Neg1[i,7]))
+mzr10<-c(as.numeric(MS2spectraCE10Cor_Neg1[i,15]),as.numeric(MS2spectraCE10Cor_Neg1[i,16]))
+chrom010<-chromatogram(Data0ondisk_Neg1,mz=mzr010,rt=rtr010)
+chrom10<-chromatogram(Data20ondisk_Neg1,mz=mzr10,rt=rtr010)
+if(min(c(length(chrom010@.Data[[1]]@intensity[!is.na(chrom010@.Data[[1]]@intensity)]),length(chrom10@.Data[[1]]@intensity[!is.na(chrom10@.Data[[1]]@intensity)])))==0){
+MS2spectraCE10Cor_Neg1[i,"PPS"]<-"NA"}
+else{
+fprec<-(as.numeric(MS2spectraCE10Cor_Neg1[i,7])-as.numeric(chrom010@.Data[[1]]@rtime)[which.max(chrom010@.Data[[1]]@intensity)])/(as.numeric(chrom010@.Data[[1]]@rtime)[which.max(chrom010@.Data[[1]]@intensity)]-as.numeric(MS2spectraCE10Cor_Neg1[i,6]))
+fprod<-(as.numeric(MS2spectraCE10Cor_Neg1[i,7])-as.numeric(chrom10@.Data[[1]]@rtime)[which.max(chrom10@.Data[[1]]@intensity)])/(as.numeric(chrom10@.Data[[1]]@rtime)[which.max(chrom10@.Data[[1]]@intensity)]-as.numeric(MS2spectraCE10Cor_Neg1[i,6]))
+MS2spectraCE10Cor_Neg1[i,"PPS"]<-(fprec/fprod)}
+length(chrom010@.Data[[1]]@intensity)<-min(c(length(chrom010@.Data[[1]]@intensity),length(chrom10@.Data[[1]]@intensity)))
+length(chrom10@.Data[[1]]@intensity)<-min(c(length(chrom010@.Data[[1]]@intensity),length(chrom10@.Data[[1]]@intensity)))
+intensitiestable<-matrix(ncol=2,nrow=min(c(length(chrom010@.Data[[1]]@intensity),length(chrom10@.Data[[1]]@intensity))))
+intensitiestable[,1]<-chrom010@.Data[[1]]@intensity
+intensitiestable[,2]<-chrom10@.Data[[1]]@intensity
+intensitiestablefinal<-intensitiestable[complete.cases(intensitiestable), ]
+if(length(intensitiestablefinal)<16){
+MS2spectraCE10Cor_Neg1[i,"CoefCor"]<-"error"
+MS2spectraCE10Cor_Neg1[i,"PvalueCor"]<-"error"
+MS2spectraCE10Cor_Neg1[i,"WilcoxPvaluePaired"]<-"InsufData"
+if(length(intensitiestablefinal)==0){MS2spectraCE10Cor_Neg1[i,"WilcoxPvalue"]<-"NA"}else{
+bb<-wilcox.test(chrom010@.Data[[1]]@intensity,chrom10@.Data[[1]]@intensity)
+MS2spectraCE10Cor_Neg1[i,"WilcoxPvalue"]<-bb$p.value}
+i<-i+1}
+else{aa<-cor.test(intensitiestablefinal[,1],intensitiestablefinal[,2],method="pearson")
+MS2spectraCE10Cor_Neg1[i,"CoefCor"]<-aa$estimate
+MS2spectraCE10Cor_Neg1[i,"PvalueCor"]<-aa$p.value
+bb<-wilcox.test(intensitiestablefinal[,1],intensitiestablefinal[,2])
+MS2spectraCE10Cor_Neg1[i,"WilcoxPvalue"]<-bb$p.value
+bbb<-wilcox.test(intensitiestablefinal[,1],intensitiestablefinal[,2],paired=TRUE)
+MS2spectraCE10Cor_Neg1[i,"WilcoxPvaluePaired"]<-bbb$p.value
+i<-i+1}
+}
+write.csv(MS2spectraCE10Cor_Neg1, "MS2spectraCE10_withCorrelation_Neg1.csv", row.names = F)
