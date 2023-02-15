@@ -21,6 +21,7 @@ m<-m+1}
 else {m<-m+1}}
 n<-n+1}
 write.csv(MS2spectraCE20_Neg1, "MS2spectraCE20_Neg1.csv", row.names = F)
+
 #Calculating parameters for filtering MS2 spectra (Correlation coefficient, P-value, Paired P-value, Peak Shape Similarity,…) – Example for CE=10
 Corresults010_Neg1<-matrix(ncol=5,nrow=nrow(MS2spectraCE10_Neg1))
 colnames(Corresults010_Neg1)<-c("CoefCor","PvalueCor","WilcoxPvalue","WilcoxPvaluePaired","PPS")
@@ -62,3 +63,16 @@ MS2spectraCE10Cor_Neg1[i,"WilcoxPvaluePaired"]<-bbb$p.value
 i<-i+1}
 }
 write.csv(MS2spectraCE10Cor_Neg1, "MS2spectraCE10_withCorrelation_Neg1.csv", row.names = F)
+
+#Getting the final matrix or dataset
+FINAL<-rbind(MS2spectraCE10_Neg1, MS2spectraCE20_Neg1)
+FINAL<-FINAL[order(as.numeric(FINAL[,15]), decreasing = F), ]
+FINAL<-FINAL[order(FINAL[,"PrecursorID"], decreasing = F), ]
+FINAL[,"ProductID"]<-paste(FINAL[,"ProductID"],FINAL[,26],sep=".")
+Diff<-matrix(ncol=2,nrow=nrow(FINAL))
+colnames(Diff)<-c("WidthDiff","mzDiff")
+FINAL<-cbind(FINAL,Diff)
+FINAL[,"WidthDiff"]<-(as.numeric(FINAL[,6])-as.numeric(FINAL[,7]))-(as.numeric(FINAL[,19])-as.numeric(FINAL[,20]))
+FINAL<-subset(FINAL,abs(as.numeric(FINAL[,"WidthDiff"]))<10)
+FINAL[,"mzDiff"]<-(as.numeric(FINAL[,2])-as.numeric(FINAL[,15]))
+write.csv(FINAL, "FINAL.csv", row.names = F)

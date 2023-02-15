@@ -1,0 +1,36 @@
+#Neutral Loss
+NeutralMass<-176.032
+ppmtolerance<-10
+FINALlist<-as.data.frame(FINAL)
+ListOfPotentialCompoundsNL<-FINALlist[which(FINALlist$mzDiff<(NeutralMass+NeutralMass*ppmtolerance/1000000)),]
+ListOfPotentialCompoundsNL<-ListOfPotentialCompoundsNL[which(ListOfPotentialCompoundsNL$mzDiff>(NeutralMass-NeutralMass*ppmtolerance/1000000)),]
+if(dim(ListOfPotentialCompoundsNL)[1]==0){ListOfPotentialCompoundsNL[1,1]<-"NoFindings"
+write.xlsx(ListOfPotentialCompoundsNL, "PrecursorsGivingNL.xlsx", sheetName = as.character(NeutralMass),col.names = TRUE, row.names = FALSE, append = FALSE)}else{
+write.xlsx(ListOfPotentialCompoundsNL, "PrecursorsGivingNL.xlsx", sheetName = as.character(NeutralMass),col.names = TRUE, row.names = FALSE, append = FALSE)}
+
+NeutralMass<-79.9568
+ppmtolerance<-10
+FINALlist<-as.data.frame(FINAL)
+ListOfPotentialCompoundsNL<-FINALlist[which(FINALlist$mzDiff<(NeutralMass+NeutralMass*ppmtolerance/1000000)),]
+ListOfPotentialCompoundsNL<-ListOfPotentialCompoundsNL[which(ListOfPotentialCompoundsNL$mzDiff>(NeutralMass-NeutralMass*ppmtolerance/1000000)),]
+if(dim(ListOfPotentialCompoundsNL)[1]==0){ListOfPotentialCompoundsNL[1,1]<-"NoFindings"
+write.xlsx(ListOfPotentialCompoundsNL, "PrecursorsGivingNL.xlsx", sheetName = as.character(NeutralMass),col.names = TRUE, row.names = FALSE, append = TRUE)}else{write.xlsx(ListOfPotentialCompoundsNL, "PrecursorsGivingNL.xlsx", sheetName = as.character(NeutralMass),col.names = TRUE, row.names = FALSE, append = TRUE)}
+
+#Product Ions
+ProductIon<-96.9596
+ppmtolerance<-10
+FINALlist<-as.data.frame(FINAL)
+ListOfPotentialCompoundsPI<-FINALlist[which(FINALlist[,15]<(ProductIon+ProductIon*ppmtolerance/1000000)),]
+ListOfPotentialCompoundsPI<-ListOfPotentialCompoundsPI[which(ListOfPotentialCompoundsPI[,15]>(ProductIon-ProductIon*ppmtolerance/1000000)),]
+if(dim(ListOfPotentialCompoundsPI)[1]==0){ListOfPotentialCompoundsPI[1,1]<-"NoFindings"
+write.xlsx(ListOfPotentialCompoundsPI, "PrecursorsGivingPI.xlsx", sheetName = as.character(ProductIon),col.names = TRUE, row.names = FALSE, append = FALSE)}else{
+write.xlsx(ListOfPotentialCompoundsPI, "PrecursorsGivingPI.xlsx", sheetName = as.character(ProductIon),col.names = TRUE, row.names = FALSE, append = FALSE)}
+
+ProductIon<-175.0248
+ppmtolerance<-10
+FINALlist<-as.data.frame(FINAL)
+ListOfPotentialCompoundsPI<-FINALlist[which(FINALlist[,15]<(ProductIon+ProductIon*ppmtolerance/1000000)),]
+ListOfPotentialCompoundsPI<-ListOfPotentialCompoundsPI[which(ListOfPotentialCompoundsPI[,15]>(ProductIon-ProductIon*ppmtolerance/1000000)),]
+if(dim(ListOfPotentialCompoundsPI)[1]==0){ListOfPotentialCompoundsPI[1,1]<-"NoFindings"
+write.xlsx(ListOfPotentialCompoundsPI, "PrecursorsGivingPI.xlsx", sheetName = as.character(ProductIon),col.names = TRUE, row.names = FALSE, append = TRUE)}else{
+write.xlsx(ListOfPotentialCompoundsPI, "PrecursorsGivingPI.xlsx", sheetName = as.character(ProductIon),col.names = TRUE, row.names = FALSE, append = TRUE)}
