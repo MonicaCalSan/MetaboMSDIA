@@ -1,0 +1,33 @@
+#Removing isotopes
+xset<-as(Peaks0_Neg1,"xcmsSet")
+xa<-annotate(xset, polarity="negative")
+peaklist<-getPeaklist(xa)
+preisotopestoremove<-peaklist[!(peaklist[,"isotopes"]==""),]
+isotopestoremove<-subset(preisotopestoremove,!(endsWith(preisotopestoremove$isotopes,'[M]-')))
+Peaks0_Neg1_noisotop<- Peaks0_Pre_Neg1 [!(paste(Peaks0_Pre_Neg1 [,1], Peaks0_Pre_Neg1 [,4]) %in% paste(isotopestoremove[,1],isotopestoremove[,4])),]
+write.xlsx(Peaks0_Neg1_noisotop, "Peaks0_Neg1_noisotop.xlsx", sheetName = "Sheet1",col.names = TRUE, row.names = TRUE, append = FALSE) 
+#Removing in source fragmentation
+ListToRemoveFragmentinChamber<-rep("NA",nrow(Peaks0_Neg1_noisotop))
+RTtolerance<-1.2
+mztoleranceppm<-10
+FileLowCEtocompare<-Peaks10final_Neg1
+n=1
+while(n<(nrow(Peaks0_Neg1_noisotop)+1)){m=1
+while(m<(nrow(FileLowCEtocompare)+1)){if(abs(Peaks0_Neg1_noisotop[n,"rt"]-FileLowCEtocompare[m,"rt"])<RTtolerance){if(abs((Peaks0_Neg1_noisotop[n,"mz"]-FileLowCEtocompare[m,"mz"])*1000000/Peaks0_Neg1_noisotop[n,"mz"])<mztoleranceppm){if(Peaks0_Neg1_noisotop[n,"maxo"]<FileLowCEtocompare[m,"maxo"]){ListToRemoveFragmentinChamber[n]<-"remove"
+m<-m+1}else{m<-m+1}}
+else{m<-m+1}}
+else{m<-m+1}}
+n<-n+1}
+if(length(which(ListToRemoveFragmentinChamber=="remove"))==0){Peaks0_Neg1_noisotop_nofragm<-Peaks0_Neg1_noisotop}else{Picos0fragmentinchamber<-Peaks0_Neg1_noisotop[(which(ListToRemoveFragmentinChamber=="remove")),]
+Peaks0_Neg1_noisotop_nofragm<-Peaks0_Neg1_noisotop[-c(which(ListToRemoveFragmentinChamber=="remove")),]
+write.xlsx(Peaks0fragmentinchamber, "Peaks0_Neg1_fragmentsinchamber.xlsx", sheetName = "Sheet1",col.names = TRUE, row.names = TRUE, append = FALSE)}
+write.xlsx(Peaks0_Neg1_noisotop_nofragm, "Peaks0_Neg1_noisotop_nofragm.xlsx", sheetName = "Sheet1",col.names = TRUE, row.names = TRUE, append = FALSE) 
+#Optional filter by peak height, area or sn
+Peaks0preprefiltering_Neg1<-subset(Peaks0_Neg1_noisotop_nofragm, Peaks0_Neg1_noisotop_nofragm[,"into"]>0)
+Peaks0prefiltering_Neg1<-subset(Peaks0preprefiltering_Neg1,Peaks0preprefiltering_Neg1[,"maxo"]>0)
+Peaks0filtered_Neg1<-subset(Peaks0prefiltering_Neg1,Peaks0prefiltering_Neg1[,"sn"]>0)
+write.xlsx(Peaks0filtered_Neg1, "Peaks0filtered_Neg1.xlsx", sheetName = "Sheet1",col.names = TRUE, row.names = TRUE, append = FALSE)
+CEinfo<-matrix(ncol=1,nrow=nrow(Peaks0filtered_Neg1))
+colnames(CEinfo)<-"CE"
+CEinfo[is.na(CEinfo)] <- 0
+Peaks0filtered_Neg1<-cbind(Peaks0filtered_Neg1,CEinfo)
