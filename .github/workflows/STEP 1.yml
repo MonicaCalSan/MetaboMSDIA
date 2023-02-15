@@ -1,0 +1,27 @@
+#Loading de mzXML file containing DIA information
+mzxml_files_Neg1<-list.files(pattern="DIA_file.mzXML") 
+#Getting MS1 information
+Data0ondisk_Neg1<-readMSData(mzxml_files_Neg1,msLevel=1,mode="onDisk")
+Dataondisk_Neg1<-readMSData(mzxml_files_Neg1,mode="onDisk") 
+#Getting MS2 information
+Data10ondisk_Neg1<-Dataondisk_Neg1[collisionEnergy(Dataondisk_Neg1)=="10"]
+Data20ondisk_Neg1<-Dataondisk_Neg1[collisionEnergy(Dataondisk_Neg1)=="20"] 
+#Extraction of MS1 information as potential precursor ions
+Peaks0_Neg1<-findChromPeaks(Data0ondisk_Neg1,param=CentWaveParam(ppm=10,peakwidth=c(5,80),snthresh=10))
+Peaks0_Pre_Neg1<-chromPeaks(Peaks0_Neg1)
+write.xlsx(Peaks0_Pre_Neg1, " Peaks0_Pre_Neg1.xlsx",sheetName="Sheet1",col.names=TRUE, row.names=TRUE,append=FALSE) 
+#Extraction of MS2 information as potential product ions
+Peaks20_Neg1<-findChromPeaks(Data20ondisk_Neg1,param=CentWaveParam(ppm=60,peakwidth=c(5,80),snthresh=0),msLevel=2L)
+Peaks20final_Neg1<-chromPeaks(Peaks20_Neg1)
+CEinfo<-matrix(ncol=1,nrow=nrow(Peaks20final_Neg1))
+colnames(CEinfo)<-"CE"
+CEinfo[is.na(CEinfo)] <- 20
+Peaks20final_Neg1<-cbind(Peaks20final_Neg1,CEinfo)
+write.xlsx(Peaks20final_Neg1, " Peaks20final_Neg1.xlsx", sheetName = "Sheet1",col.names = TRUE, row.names = TRUE, append = FALSE)
+Peaks10_Neg1<-findChromPeaks(Data10ondisk_Neg1,param=CentWaveParam(ppm=60,peakwidth=c(5,80),snthresh=0),msLevel=2L)
+Peaks10final_Neg1<-chromPeaks(Peaks10_Neg1)
+CEinfo<-matrix(ncol=1,nrow=nrow(Peaks10final_Neg1))
+colnames(CEinfo)<-"CE"
+CEinfo[is.na(CEinfo)] <- 10
+Peaks10final_Neg1<-cbind(Peaks10final_Neg1,CEinfo)
+write.xlsx(Picos10paraexportar_Neg1, " Peaks10final_Neg1.xlsx", sheetName = "Sheet1",col.names = TRUE, row.names = TRUE, append = FALSE)
