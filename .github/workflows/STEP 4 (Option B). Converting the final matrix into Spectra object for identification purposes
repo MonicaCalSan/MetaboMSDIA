@@ -1,0 +1,51 @@
+#Function usage, where the polarity is defined as 0L for negative ionizacion mode and 1L for positive ionization mode.
+FINALSpectra<-LoadtoSpectra(FINAL,DefinedPolarity=0L) 
+#Needed function:
+LoadtoSpectra<-function(FINAL,DefinedPolarity=0L){
+FINALforSpectra<-as.data.frame(FINAL[,c(1,2,5,15,23,26)])
+FINALforSpectraRemovingMzInt<-unique(as.data.frame(FINAL[,c(1,2,5,26)]))
+FINALforSpectraPreDB<-DataFrame(
+msLevel=rep(2L,nrow(FINALforSpectraRemovingMzInt)),
+polarity=rep(DefinedPolarity,nrow(FINALforSpectraRemovingMzInt)),
+rtime=as.numeric(FINALforSpectraRemovingMzInt[[3]]),
+precursorMz=as.numeric(FINALforSpectraRemovingMzInt[[2]]),
+collisionEnergy=as.numeric(FINALforSpectraRemovingMzInt[[4]]),
+spectrum_id=FINALforSpectraRemovingMzInt[[1]])
+for (i in (1:nrow(FINALforSpectraRemovingMzInt))){
+presubset<-subset(FINALforSpectra,FINALforSpectra[[1]]==FINALforSpectraRemovingMzInt[[1]][i])
+subset<-subset(presubset,presubset[[6]]==FINALforSpectraRemovingMzInt[[4]][i])
+subset<-arrange(subset,as.numeric(subset[[4]]))
+FINALforSpectraPreDB$mz[i] <-list(subset[[4]])
+FINALforSpectraPreDB$intensity[i]<-list(subset[[5]])}
+FINALforSpectraDB<-Spectra(FINALforSpectraPreDB)
+return(FINALforSpectraDB)}
+
+#The identification can be done with existing DB following Spectra package instructions, but you can also load your own database from excel, using the following code:
+HomemadeDB<-LoadtoSepctraDBxlsx(file="HomemadeDB.xlsx") 
+#Needed function:
+LoadtoSpectraDBxlsx<-function(file){
+HomemadeDBexcel <- read_excel(file)
+GuideforDatabaseLoad<-unique(HomemadeDBexcel$Compound)
+numberofDBentries<-dplyr::n_distinct(HomemadeDBexcel[,c("Compound","CE","Polarity")])
+RemovingMzIntensity<-unique(HomemadeDBexcel[,c("Compound","CE","Formula","Mass","RT","CAS ID","Precursor ion","Adduct","Polarity")])
+RemovingMzIntensity<-as.data.frame(RemovingMzIntensity)
+HomemadePreDB<-DataFrame(
+msLevel=rep(2L,nrow(RemovingMzIntensity)),
+polarity=ifelse(RemovingMzIntensity$Polarity=="Negative",0L,1L),
+compound_name=RemovingMzIntensity$Compound,
+formula=RemovingMzIntensity$Formula,
+exactmass=as.numeric(RemovingMzIntensity$Mass),
+rtime=as.numeric(RemovingMzIntensity$RT),
+cas=RemovingMzIntensity$'CAS ID',
+precursorMz=as.numeric(RemovingMzIntensity$'Precursor ion'),
+precursorCharge=rep(1L,nrow(RemovingMzIntensity)),
+adduct=RemovingMzIntensity$Adduct,
+collisionEnergy=as.numeric(RemovingMzIntensity$CE))
+for (i in (1:length(RemovingMzIntensity))){
+presubset<-subset(HomemadeDBexcel,Compound==RemovingMzIntensity$Compound[i])
+subset<-subset(presubset,CE==RemovingMzIntensity$CE[i])
+subset<-arrange(subset,Fragments)
+HomemadePreDB$mz[i] <-list(subset$Fragments)
+HomemadePreDB$intensity[i]<-list(subset$Intensity)}
+HomemadeDB<-Spectra(HomemadePreDB)
+return(HomemadeDB)}
